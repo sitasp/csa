@@ -1,30 +1,40 @@
 package com.sage.csa.controller;
 
+import com.sage.csa.dro.MessageRequest;
+import com.sage.csa.dro.MessageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 @RestController
 public class ChatController {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
+
     private final ChatClient chatClient;
 
-    public ChatController(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
+    public ChatController(ChatClient.Builder builder, VectorStore vectorStore) {
+        this.chatClient = builder
+                .defaultAdvisors(new QuestionAnswerAdvisor(vectorStore))
+                .build();
     }
 
-    @GetMapping("/chat")
-    public Flux<String> chat(@RequestParam(value = "message", defaultValue = "Hello") String message) {
-        Flux<String> response =  chatClient.prompt()
-                .user(message)
+    @PostMapping("/chat")
+    public Flux<String> chat(@RequestBody MessageRequest messageRequest) {
+        log.info("Received request: {}", messageRequest);
+
+        return chatClient.prompt()
+                .user(messageRequest.getMessage())
                 .stream()
                 .content()
+                .map(content -> content)  // No need to wrap in an object, just stream the content directly
                 .doOnNext(item -> {
-                    // Replace with your logging framework (e.g., SLF4J)
-                    System.out.println("Response on message: " + item); // Simple console log for demonstration
+                    // Log or process the string chunk
+                    System.out.println("Response chunk: " + item);
                 });
-        return response;
     }
 }
