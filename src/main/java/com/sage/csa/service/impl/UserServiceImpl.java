@@ -96,6 +96,5 @@ public class UserServiceImpl implements UserService {
                                                 .collect(Collectors.joining(",")))
                                 .build())
                 ).getTokenValue());
-        )
     }
 }
