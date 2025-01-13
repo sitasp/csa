@@ -1,20 +1,20 @@
 package com.sage.csa.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.ai.chat.messages.MessageType;
 
 import java.time.Instant;
 
+@Entity
 @Table(name = "chat_history")
 @Getter
 @Setter
 public class ChatHistory {
     @Id
-    private String chatId;              // TODO: use it as a primary key
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String chatId;
     private long userId;
     private String userName;
     private String message;

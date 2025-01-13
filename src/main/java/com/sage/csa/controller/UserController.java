@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping("/create")
     public Mono<ApiResponse<CreateUserResponse>> createUser(@RequestBody CreateUserRequest request) {
         return userService.createUser(request.userName(), request.password(), request.mobileNumber())
-                    .map(ControllerUtils::ok);
+                    .map(ControllerUtils::<CreateUserResponse>ok);
     }
 
     @PostMapping("/login")
@@ -30,13 +30,13 @@ public class UserController {
         Mono<String> jwtToken = userService.loginUser(request.userName(), request.password());
         return jwtToken.flatMap(token -> {
             if(StringUtils.isBlank(token)){
-                return Mono.just(ControllerUtils.five00("Invalid username or password"));
+                return Mono.just(ControllerUtils.<LoginUserResponse>five00("Invalid username or password"));
             }
             return userService.getCurrentUserId()
                     .flatMap(currentUserId ->
                             userChatService.getUserChatByUserId(currentUserId).collectList()
                     )
-                    .map(e -> ControllerUtils.ok(new LoginUserResponse(token, e)));
+                    .map(e -> ControllerUtils.<LoginUserResponse>ok(new LoginUserResponse(token, e)));
         });
     }
 }

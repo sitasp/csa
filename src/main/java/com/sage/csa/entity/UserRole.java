@@ -2,7 +2,7 @@ package com.sage.csa.entity;
 
 import lombok.Getter;
 
-@Getter
+
 public enum UserRole {
     USER("USGP_user"),
     ADMIN("USGP_admin");
@@ -11,5 +11,9 @@ public enum UserRole {
 
     UserRole(String code){
         this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 }
