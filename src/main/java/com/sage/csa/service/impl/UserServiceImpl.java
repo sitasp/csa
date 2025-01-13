@@ -1,9 +1,10 @@
 package com.sage.csa.service.impl;
 
+import com.healthmarketscience.jackcess.crypt.InvalidCredentialsException;
+import com.sage.csa.constants.CsaConstants;
 import com.sage.csa.dto.CreateUserResponse;
 import com.sage.csa.entity.User;
 import com.sage.csa.entity.UserRole;
-import com.sage.csa.repository.UserRepository;
 import com.sage.csa.repository.reactive.UserReactiveRepository;
 import com.sage.csa.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -13,9 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -68,10 +72,14 @@ public class UserServiceImpl implements UserService {
         if(StringUtils.isBlank(userName) || StringUtils.isBlank(password)){
             throw new IllegalArgumentException("Username and password are required");
         }
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userName, password);;
-        var authUser = authenticationManager.authenticate(authentication);
-        ReactiveSecurityContextHolder.withAuthentication(authentication);
-        return getJwtToken(userName, authUser);
+        try{
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userName, password);;
+            var authUser = authenticationManager.authenticate(authentication);
+            ReactiveSecurityContextHolder.withAuthentication(authentication);
+            return getJwtToken(userName, authUser);
+        } catch (AuthenticationException e) {
+            throw new InvalidCredentialsException("Invalid username or password");
+        }
     }
 
     private Mono<String> getJwtToken(String userName, Authentication authUser) {
@@ -79,8 +87,15 @@ public class UserServiceImpl implements UserService {
                 jwtEncoder.encode(
                         JwtEncoderParameters.from(JwtClaimsSet.builder()
                                 .subject(userName)
-                                .issuer(Project)
-                ))
+                                .issuer(CsaConstants.ISSUER)
+                                .issuedAt(Instant.now())
+                                .expiresAt(Instant.now().plusSeconds(CsaConstants.JWT_EXPIRATION_TIME))
+                                .claim(CsaConstants.AUTHORITIES_CLAIM,
+                                        authUser.getAuthorities().stream()
+                                                .map(GrantedAuthority::getAuthority)
+                                                .collect(Collectors.joining(",")))
+                                .build())
+                ).getTokenValue());
         )
     }
 }

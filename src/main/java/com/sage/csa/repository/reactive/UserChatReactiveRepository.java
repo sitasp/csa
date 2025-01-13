@@ -3,6 +3,7 @@ package com.sage.csa.repository.reactive;
 import com.sage.csa.entity.UserChat;
 import com.sage.csa.repository.UserChatRepository;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -20,10 +21,11 @@ public class UserChatReactiveRepository {
      * @param userId the ID of the user
      * @return Mono<UserChat>
      */
-    public Mono<UserChat> getUserChatsByUserId(Long userId) {
-        return Mono.fromCallable(() -> userChatRepository.getUserChatsByUserId(userId))
+    public Flux<UserChat> getUserChatsByUserId(Long userId) {
+        return Flux.defer(() -> Flux.fromIterable(userChatRepository.getUserChatsByUserId(userId)))
                 .subscribeOn(Schedulers.boundedElastic());
     }
+
 
     /**
      * Checks if a UserChat exists by userId and chatId as a reactive Mono.
@@ -33,6 +35,11 @@ public class UserChatReactiveRepository {
      */
     public Mono<Long> existsByUserIdAndChatId(Long userId, String chatId) {
         return Mono.fromCallable(() -> userChatRepository.existsByUserIdAndChatId(userId, chatId))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
+    public Mono<UserChat> save(UserChat userChat) {
+        return Mono.fromCallable(() -> userChatRepository.save(userChat))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 }
