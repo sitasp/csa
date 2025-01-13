@@ -64,6 +64,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Username and password are required");
         }
         Mono<User> createdUserMono = userReactiveRepository.save(new User(userName, password, mobileNumber, UserRole.USER));
+        // call keycloak api to create a user
+
         return createdUserMono.map(user -> new CreateUserResponse(user.getUserId(), user.getUserName()));
     }
 
