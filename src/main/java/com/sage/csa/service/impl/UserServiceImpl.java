@@ -34,8 +34,6 @@ public class UserServiceImpl implements UserService {
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired private UserReactiveRepository userReactiveRepository;
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private JwtEncoder jwtEncoder;
 
     @Override
     public Mono<String> getCurrentUserName() {
@@ -64,8 +62,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Username and password are required");
         }
         Mono<User> createdUserMono = userReactiveRepository.save(new User(userName, password, mobileNumber, UserRole.USER));
-        // call keycloak api to create a user
-
+        // TODO: call keycloak api to create a user
         return createdUserMono.map(user -> new CreateUserResponse(user.getUserId(), user.getUserName()));
     }
 
@@ -74,29 +71,7 @@ public class UserServiceImpl implements UserService {
         if(StringUtils.isBlank(userName) || StringUtils.isBlank(password)){
             throw new IllegalArgumentException("Username and password are required");
         }
-        try{
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userName, password);;
-            var authUser = authenticationManager.authenticate(authentication);
-            ReactiveSecurityContextHolder.withAuthentication(authentication);
-            return getJwtToken(userName, authUser);
-        } catch (AuthenticationException e) {
-            throw new InvalidCredentialsException("Invalid username or password");
-        }
-    }
-
-    private Mono<String> getJwtToken(String userName, Authentication authUser) {
-        return Mono.just(
-                jwtEncoder.encode(
-                        JwtEncoderParameters.from(JwtClaimsSet.builder()
-                                .subject(userName)
-                                .issuer(CsaConstants.ISSUER)
-                                .issuedAt(Instant.now())
-                                .expiresAt(Instant.now().plusSeconds(CsaConstants.JWT_EXPIRATION_TIME))
-                                .claim(CsaConstants.AUTHORITIES_CLAIM,
-                                        authUser.getAuthorities().stream()
-                                                .map(GrantedAuthority::getAuthority)
-                                                .collect(Collectors.joining(",")))
-                                .build())
-                ).getTokenValue());
+        // TODO: call keycloak api to login and fetch jwt access token for user
+        return null;
     }
 }
