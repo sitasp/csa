@@ -1,7 +1,6 @@
 package com.sage.csa.controller;
 
-import com.sage.csa.dro.MessageRequest;
-import com.sage.csa.dro.MessageResponse;
+import com.sage.csa.dto.MessageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
