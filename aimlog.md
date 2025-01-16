@@ -6,3 +6,6 @@
 ## Branches
 ### user-mgmt
 1. fetch user details from kc using API
+2. Remove user authentication from our setup
+   1. authentication / authorization - keycloak
+   2. system will use only keycloak user data
