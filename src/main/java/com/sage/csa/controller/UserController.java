@@ -16,27 +16,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/user")
 public class UserController {
 
-    @Autowired private UserService userService;
-    @Autowired private UserChatService userChatService;
-
-    @PostMapping("/create")
-    public Mono<ApiResponse<CreateUserResponse>> createUser(@RequestBody CreateUserRequest request) {
-        return userService.createUser(request.userName(), request.password(), request.mobileNumber())
-                    .map(ControllerUtils::<CreateUserResponse>ok);
-    }
-
-    @PostMapping("/login")
-    public Mono<ApiResponse<LoginUserResponse>> login(@RequestBody LoginUserRequest request){
-        Mono<String> jwtToken = userService.loginUser(request.userName(), request.password());
-        return jwtToken.flatMap(token -> {
-            if(StringUtils.isBlank(token)){
-                return Mono.just(ControllerUtils.<LoginUserResponse>five00("Invalid username or password"));
-            }
-            return userService.getCurrentUserId()
-                    .flatMap(currentUserId ->
-                            userChatService.getUserChatByUserId(currentUserId).collectList()
-                    )
-                    .map(e -> ControllerUtils.<LoginUserResponse>ok(new LoginUserResponse(token, e)));
-        });
-    }
+//    @Autowired private UserService userService;
+//    @Autowired private UserChatService userChatService;
+//    
 }
