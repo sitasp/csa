@@ -17,24 +17,24 @@ public class UserChatReactiveRepository {
     }
 
     /**
-     * Retrieves UserChat by userId as a reactive Mono.
-     * @param userId the ID of the user
+     * Retrieves UserChat by userName as a reactive Mono.
+     * @param userName the Name of the user
      * @return Mono<UserChat>
      */
-    public Flux<UserChat> getUserChatsByUserId(Long userId) {
-        return Flux.defer(() -> Flux.fromIterable(userChatRepository.getUserChatsByUserId(userId)))
+    public Flux<UserChat> getUserChatsByUserName(String userName) {
+        return Flux.defer(() -> Flux.fromIterable(userChatRepository.getUserChatsByUserName(userName)))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
 
     /**
-     * Checks if a UserChat exists by userId and chatId as a reactive Mono.
-     * @param userId the ID of the user
+     * Checks if a UserChat exists by userName and chatId as a reactive Mono.
+     * @param userName the Name of the user
      * @param chatId the ID of the chat
      * @return Mono<Long> (count result)
      */
-    public Mono<Long> existsByUserIdAndChatId(Long userId, String chatId) {
-        return Mono.fromCallable(() -> userChatRepository.existsByUserIdAndChatId(userId, chatId))
+    public Mono<Long> existsByUserNameAndChatId(String userName, String chatId) {
+        return Mono.fromCallable(() -> userChatRepository.existsByUserNameAndChatId(userName, chatId))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
