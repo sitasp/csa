@@ -1,6 +1,5 @@
 package com.sage.csa.service;
 
-import com.sage.csa.dto.CreateUserResponse;
 import reactor.core.publisher.Mono;
 
 public interface UserService {
