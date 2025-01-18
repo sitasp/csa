@@ -1,6 +1,6 @@
 package com.sage.csa.utils;
 
-import com.sage.csa.dto.ApiResponse;
+import com.sage.csa.dto.response.ApiResponse;
 
 public class ControllerUtils {
 

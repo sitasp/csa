@@ -1,4 +1,4 @@
-package com.sage.csa.dto;
+package com.sage.csa.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

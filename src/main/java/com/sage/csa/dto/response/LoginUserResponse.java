@@ -1,4 +1,6 @@
-package com.sage.csa.dto;
+package com.sage.csa.dto.response;
+
+import com.sage.csa.dto.UserChatDTO;
 
 import java.util.List;
 
