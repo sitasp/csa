@@ -10,9 +10,9 @@ import java.util.List;
 
 @Repository
 public interface UserChatRepository extends JpaRepository<UserChat, Long> {
-    @Query("SELECT uc FROM UserChat uc WHERE uc.userId = :userId")
-    List<UserChat> getUserChatsByUserId(Long userId);
+    @Query("SELECT uc FROM UserChat uc WHERE uc.userName = :userName")
+    List<UserChat> getUserChatsByUserName(String userName);
 
-    @Query("SELECT count(uc) > 0 FROM UserChat uc WHERE uc.userId = :userId AND uc.chatId = :chatId")
-    Long existsByUserIdAndChatId(Long userId, String chatId);
+    @Query("SELECT count(uc) > 0 FROM UserChat uc WHERE uc.userName = :userName AND uc.chatId = :chatId")
+    Long existsByUserNameAndChatId(String userName, String chatId);
 }

@@ -15,14 +15,14 @@ public class UserChatServiceImpl implements UserChatService {
     @Autowired private UserChatReactiveRepository userChatReactiveRepository;
 
     @Override
-    public Flux<UserChatDTO> getUserChatByUserId(Long userId) {
-        return userChatReactiveRepository.getUserChatsByUserId(userId)
+    public Flux<UserChatDTO> getUserChatByUserName(String userName) {
+        return userChatReactiveRepository.getUserChatsByUserName(userName)
                 .map(e -> new UserChatDTO(e.getChatId(), e.getTitle()));
     }
 
     @Override
-    public Mono<Boolean> existsByUserIdAndChatId(Long userId, String chatId) {
-        return userChatReactiveRepository.existsByUserIdAndChatId(userId, chatId)
+    public Mono<Boolean> existsByUserNameAndChatId(String userName, String chatId) {
+        return userChatReactiveRepository.existsByUserNameAndChatId(userName, chatId)
                 .map(count -> count > 0);
     }
 

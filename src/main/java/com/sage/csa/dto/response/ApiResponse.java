@@ -1,6 +1,5 @@
-package com.sage.csa.dto;
+package com.sage.csa.dto.response;
 
-import com.sage.csa.utils.ControllerUtils;
 import lombok.*;
 
 @Getter

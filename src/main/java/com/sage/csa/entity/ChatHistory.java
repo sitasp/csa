@@ -15,7 +15,6 @@ public class ChatHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private String chatId;
-    private long userId;
     private String userName;
     private String message;
     @Column(name = "message_type")
