@@ -16,11 +16,6 @@ import reactor.core.publisher.Mono;
 public class UserManagementConfig {
 
     @Bean
-    PasswordEncoder passwordEncoder(){
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
-
-    @Bean
     public ReactiveAuthenticationManager reactiveAuthenticationManager(ReactiveJwtDecoder jwtDecoder,
                                                                        Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter) {
         JwtReactiveAuthenticationManager jwtAuthenticationManager = new JwtReactiveAuthenticationManager(jwtDecoder);
