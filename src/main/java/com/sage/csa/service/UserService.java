@@ -4,5 +4,5 @@ import com.sage.csa.dto.objects.KUser;
 import reactor.core.publisher.Mono;
 
 public interface UserService {
-    Mono<KUser> getLoggedInUser();
+    KUser getLoggedInUser();
 }

@@ -6,18 +6,12 @@ import com.sage.csa.dto.response.ApiResponse;
 import com.sage.csa.entity.ChatHistory;
 import com.sage.csa.service.UserChatService;
 import com.sage.csa.service.UserService;
-import com.sage.csa.utils.ControllerUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

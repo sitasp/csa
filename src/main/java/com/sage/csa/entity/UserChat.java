@@ -1,8 +1,6 @@
 package com.sage.csa.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
@@ -14,9 +12,16 @@ import java.time.Instant;
 @Data
 public class UserChat {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String userName;
     private String title;
     private String chatId;
     private Instant createdAt = Instant.now();
+
+    public UserChat(String userName, String title, String chatId) {
+        this.userName = userName;
+        this.title = title;
+        this.chatId = chatId;
+    }
 }
