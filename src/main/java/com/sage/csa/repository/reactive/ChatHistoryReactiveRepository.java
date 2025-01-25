@@ -40,5 +40,11 @@ public class ChatHistoryReactiveRepository {
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMapMany(Flux::fromIterable);
     }
+
+    public Flux<ChatHistory> saveAll(List<ChatHistory> batch) {
+        return Mono.fromCallable(() -> chatHistoryRepository.saveAll(batch))
+                .subscribeOn(Schedulers.boundedElastic()) // Offload blocking IO
+                .flatMapMany(Flux::fromIterable);
+    }
 }
 

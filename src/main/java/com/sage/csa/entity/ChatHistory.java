@@ -1,7 +1,9 @@
 package com.sage.csa.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.ai.chat.messages.MessageType;
 
@@ -11,6 +13,8 @@ import java.time.Instant;
 @Table(name = "chat_history")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ChatHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
