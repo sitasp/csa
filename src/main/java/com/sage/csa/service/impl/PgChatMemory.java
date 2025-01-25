@@ -4,7 +4,6 @@ import com.sage.csa.entity.ChatHistory;
 import com.sage.csa.entity.UserChat;
 import com.sage.csa.repository.ChatHistoryRepository;
 import com.sage.csa.repository.UserChatRepository;
-import com.sage.csa.service.ChatHistoryService;
 import com.sage.csa.service.UserChatService;
 import com.sage.csa.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PgChatBlockingMemory implements ChatMemory {
+public class PgChatMemory implements ChatMemory {
 
     private final UserService userService;
     private final UserChatService userChatService;
