@@ -11,12 +11,10 @@ import reactor.core.publisher.Mono;
 public class UserController {
 
     @Autowired private UserService userService;
-//    @Autowired private UserChatService userChatService;
 
     @GetMapping("/profile")
-    public Mono<KUser> getLoggedInUser() {
-        return userService.getLoggedInUser()
-                .doOnNext(kUser -> System.out.println("Retrieved User: " + kUser.toString()));
+    public KUser getLoggedInUser() {
+        return userService.getLoggedInUser();
     }
 
 }

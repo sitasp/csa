@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface ChatHistoryService {
 
-    Flux<ChatHistoryResponse> findChatHistoryByChatIdAndUsername(String chatId);
+    List<ChatHistoryResponse> findChatHistoryByChatIdAndUsername(String chatId);
 
-    Flux<ChatHistory> findByChatId(String conversationId, int lastN);
+    List<ChatHistory> findByChatId(String conversationId, int lastN);
 
-    Flux<ChatHistory> saveAll(Flux<ChatHistory> chatHistories);
+    List<ChatHistory> saveAll(List<ChatHistory> chatHistories);
 }

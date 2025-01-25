@@ -1,6 +1,5 @@
 package com.sage.csa.repository;
 
-import com.sage.csa.dto.UserChatDTO;
 import com.sage.csa.entity.UserChat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

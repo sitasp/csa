@@ -21,4 +21,9 @@ public class GroceryController {
         List<String> groceries = List.of("Potato", "Tomato", "Brinjal");
         return Mono.just(groceries);
     }
+
+    @GetMapping("/name")
+    public String getThreadName() {
+        return Thread.currentThread().toString();
+    }
 }

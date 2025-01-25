@@ -35,7 +35,7 @@ public class PgChatBlockingMemory implements ChatMemory {
 
     @Override
     public void add(String conversationId, List<Message> messages) {
-        var userName = userService.getLoggedInUser().block().getUserName();
+        var userName = userService.getLoggedInUser().getUserName();
         Long chatExists = userChatRepository.existsByUserNameAndChatId(userName, conversationId);
         if(chatExists <= 0){
             userChatService.save(new UserChat(userName, getTitle(messages), conversationId));
