@@ -2,11 +2,15 @@ package com.sage.csa.config.keycloak;
 
 import java.util.Collection;
 
+import com.sage.csa.dto.objects.KUser;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+
+import static com.sage.csa.constants.CsaConstants.*;
 
 
 public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -20,8 +24,19 @@ public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, Abstra
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
+        String username = jwt.getClaimAsString(K_USERNAME);
+        String email = jwt.getClaimAsString(K_EMAIL);
+        String name = jwt.getClaimAsString(K_NAME);
+
+        // Build KUser
+        KUser kuser = KUser.builder()
+                .userName(username)
+                .emailId(email)
+                .name(name)
+                .build();
+
         Collection<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
-        return new JwtAuthenticationToken(jwt, authorities, extractUsername(jwt));
+        return new UsernamePasswordAuthenticationToken(kuser, jwt, authorities);
     }
 
     private String extractUsername(Jwt jwt) {

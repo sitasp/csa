@@ -18,10 +18,19 @@ import java.time.Instant;
 public class ChatHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     private String chatId;
     private String userName;
     private String message;
     @Column(name = "message_type")
     private MessageType messageType;
     private Instant createdAt;
+
+    public ChatHistory(String chatId, String userName, String message, MessageType messageType) {
+        this.chatId = chatId;
+        this.userName = userName;
+        this.message = message;
+        this.messageType = messageType;
+        this.createdAt = Instant.now();
+    }
 }

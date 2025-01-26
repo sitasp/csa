@@ -13,5 +13,5 @@ public interface UserChatRepository extends JpaRepository<UserChat, Long> {
     List<UserChat> getUserChatsByUserName(String userName);
 
     @Query("SELECT count(uc) > 0 FROM UserChat uc WHERE uc.userName = :userName AND uc.chatId = :chatId")
-    Long existsByUserNameAndChatId(String userName, String chatId);
+    Boolean existsByUserNameAndChatId(String userName, String chatId);
 }
