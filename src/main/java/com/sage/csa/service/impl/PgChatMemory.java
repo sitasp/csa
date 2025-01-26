@@ -35,8 +35,8 @@ public class PgChatMemory implements ChatMemory {
     @Override
     public void add(String conversationId, List<Message> messages) {
         var userName = userService.getLoggedInUser().getUserName();
-        Long chatExists = userChatRepository.existsByUserNameAndChatId(userName, conversationId);
-        if(chatExists <= 0){
+        Boolean chatExists = userChatRepository.existsByUserNameAndChatId(userName, conversationId);
+        if(chatExists){
             userChatService.save(new UserChat(userName, getTitle(messages), conversationId));
         }
         log.info("Adding messages to conversationId: {}", conversationId);
@@ -66,7 +66,7 @@ public class PgChatMemory implements ChatMemory {
 
     private ChatHistory getChatHistory(String conversationId, Message message, String username) {
         return new ChatHistory(conversationId, username,
-                message.getContent(), message.getMessageType(), Instant.now());
+                message.getContent(), message.getMessageType());
     }
 
     private Message createMessage(ChatHistory chatHistory) {

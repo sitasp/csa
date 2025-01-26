@@ -24,7 +24,7 @@ public class UserChatServiceImpl implements UserChatService {
 
     @Override
     public boolean existsByUserNameAndChatId(String userName, String chatId) {
-        return (userChatRepository.existsByUserNameAndChatId(userName, chatId) > 0);
+        return userChatRepository.existsByUserNameAndChatId(userName, chatId);
     }
 
     @Override
