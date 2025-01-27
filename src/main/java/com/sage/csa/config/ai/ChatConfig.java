@@ -17,7 +17,8 @@ public class ChatConfig {
                                  CaptureMemoryAdvisor captureMemoryAdvisor,
                                  PgChatMemory pgChatMemory){
         return builder
-                .defaultAdvisors(new MessageChatMemoryAdvisor(pgChatMemory), captureMemoryAdvisor)
+                .defaultAdvisors(new MessageChatMemoryAdvisor(pgChatMemory),
+                        captureMemoryAdvisor)
                 .build();
     }
 }

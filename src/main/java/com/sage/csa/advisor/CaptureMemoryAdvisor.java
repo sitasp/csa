@@ -5,6 +5,7 @@ import com.sage.csa.service.UserService;
 import com.sage.csa.service.impl.BasicMemoryExtractor;
 import com.sage.csa.service.impl.PgChatMemory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.AdvisedRequest;
 import org.springframework.ai.chat.client.advisor.api.AdvisedResponse;
@@ -98,7 +99,7 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor {
         log.info("Initiating captureMemoryTask");
         var retrievedUserContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
         var retrievedAssistantContent = basicMemoryExtractor.extractResponseContext(advisedResponse);
-        String chatId = (String) advisedRequest.adviseContext().getOrDefault(CHAT_MEMORY_CONVERSATION_ID_KEY, "");
+        String chatId = (String) advisedRequest.adviseContext().getOrDefault(CHAT_MEMORY_CONVERSATION_ID_KEY, RandomUtils.nextInt());
         var capturedMemory = chatClient.prompt()
                 .system(promptSystemSpec -> promptSystemSpec.param(
                         "memory", pgChatMemory.get(chatId, 10).stream()

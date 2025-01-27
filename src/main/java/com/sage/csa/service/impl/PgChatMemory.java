@@ -29,7 +29,7 @@ public class PgChatMemory implements ChatMemory {
 
     @Override
     public void add(String conversationId, Message message) {
-        ChatMemory.super.add(conversationId, message);
+        add(conversationId, List.of(message));
     }
 
     @Override
