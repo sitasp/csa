@@ -35,7 +35,6 @@ public class ChatController {
     private final UserService userService;
     private final UserChatService userChatService;
     private final ChatHistoryService chatHistoryService;
-    private final List<Advisor> advisorList;
 
     @PostMapping("/chat")
     public Flux<String> chat(@RequestBody MessageRequest messageRequest) {
@@ -43,18 +42,28 @@ public class ChatController {
         String chatId = Objects.nonNull(messageRequest.getChatId()) ?
                                     messageRequest.getChatId() : UUID.randomUUID().toString();
 
-        log.info("Advisors count: {}", advisorList.size());
-
         return chatClient.prompt()
                 .user(messageRequest.getMessage())
                 .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
-                .advisors(advisorList)
                 .stream()
                 .content()
                 .map(content -> content)  // No need to wrap in an object, just stream the content directly
                 .doOnNext(item -> {
                     System.out.println("Response chunk: " + item);
                 });
+    }
+
+
+    @PostMapping("/chat/normal")
+    public String chatNormal(@RequestBody MessageRequest messageRequest) {
+        log.info("Received request: {}", messageRequest);
+        String chatId = Objects.nonNull(messageRequest.getChatId()) ?
+                messageRequest.getChatId() : UUID.randomUUID().toString();
+
+        return chatClient.prompt()
+                .user(messageRequest.getMessage())
+                .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
+                .call().content();
     }
 
     @GetMapping("/chat-history")
