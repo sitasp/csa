@@ -25,9 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -70,7 +68,12 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor, StreamAroundAdvi
         log.info("Inside CaptureMemoryAdvisor aroundCall");
         var response = chain.nextAroundCall(advisedRequest);
         SecurityContext context = SecurityContextHolder.getContext();
-        executorService.submit(backgroundTask(advisedRequest, response, context));
+
+        String chatId = (String) advisedRequest.adviseContext().get(CHAT_MEMORY_CONVERSATION_ID_KEY);
+        var userContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
+        var assistantContent = basicMemoryExtractor.extractResponseContext(response);
+
+        executorService.submit(backgroundTask(userContent, assistantContent, chatId));
         return response;
     }
 
@@ -80,26 +83,31 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor, StreamAroundAdvi
 
         SecurityContext context = SecurityContextHolder.getContext();
 
+        String chatId = (String) advisedRequest.adviseContext().get(CHAT_MEMORY_CONVERSATION_ID_KEY);
+        String userContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
+
+
+        StringBuilder result = new StringBuilder();
         return chain.nextAroundStream(advisedRequest)
-                .collectList()  // Aggregate all responses into a List
-                .doOnSuccess(responses -> {
-                    if (!responses.isEmpty()) {
-                        executorService.submit(backgroundTask(advisedRequest, responses.get(responses.size() - 1), context));
-                    }
+                .doOnNext(item -> {
+                    result.append(basicMemoryExtractor.extractResponseContext(item));
                 })
-                .flatMapMany(Flux::fromIterable); // Convert back to Flux
+                .doOnComplete(() -> {
+                    if (!result.isEmpty()) {
+                        String assistantContent = result.toString();
+                        System.out.println("Result content: " + assistantContent);
+                        executorService.submit(backgroundTask(userContent, assistantContent, chatId));
+                    }
+                });
     }
 
-    private Runnable backgroundTask(AdvisedRequest advisedRequest,
-                                    AdvisedResponse response,
-                                    SecurityContext context) {
+    private Runnable backgroundTask(String userContent,
+                                    String assistantContent,
+                                    String chatId) {
         return () -> {
             try {
-                // Set the captured context in the virtual thread
-                SecurityContextHolder.setContext(context);
-
                 retryTemplate.execute((RetryCallback<Boolean, Throwable>) retryContext ->
-                        captureMemoryTask(advisedRequest, response)
+                        captureMemoryTask(userContent, assistantContent, chatId)
                 );
             } catch (Throwable e) {
                 log.error("Memory capture failed", e);
@@ -109,21 +117,17 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor, StreamAroundAdvi
         };
     }
 
-    private boolean captureMemoryTask(AdvisedRequest advisedRequest,
-                                      AdvisedResponse advisedResponse){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Security context in virtual thread: {}", auth);
+    private boolean captureMemoryTask(String userContent,
+                                      String assistantContent,
+                                      String chatId){
 
         log.info("Initiating captureMemoryTask");
-        var retrievedUserContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
-        var retrievedAssistantContent = basicMemoryExtractor.extractResponseContext(advisedResponse);
-        String chatId = (String) advisedRequest.adviseContext().get(CHAT_MEMORY_CONVERSATION_ID_KEY);
         var capturedMemory = chatClient.prompt()
                 .system(promptSystemSpec -> promptSystemSpec.param(
                         "memory", pgChatMemory.get(chatId, 10).stream()
                                 .map(Content::getContent)
                                 .collect(Collectors.joining(","))))
-                .user(retrievedUserContent)
+                .user(userContent)
                 .call()
                 .entity(MemoryLLMResponse.class);
 

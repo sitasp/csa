@@ -46,10 +46,7 @@ public class ChatController {
                 .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId))
                 .stream()
                 .content()
-                .map(content -> content)  // No need to wrap in an object, just stream the content directly
-                .doOnNext(item -> {
-                    System.out.println("Response chunk: " + item);
-                });
+                .map(content -> content);
     }
 
 
