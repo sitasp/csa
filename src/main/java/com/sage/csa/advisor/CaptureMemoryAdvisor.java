@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -66,6 +67,7 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor {
     @Override
     public AdvisedResponse aroundCall(AdvisedRequest advisedRequest,
                                       CallAroundAdvisorChain chain) {
+        log.info("Inside CaptureMemoryAdvisor");
         var response = chain.nextAroundCall(advisedRequest);
         SecurityContext context = SecurityContextHolder.getContext();
         executorService.submit(backgroundTask(advisedRequest, response, context));
@@ -99,7 +101,7 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor {
         log.info("Initiating captureMemoryTask");
         var retrievedUserContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
         var retrievedAssistantContent = basicMemoryExtractor.extractResponseContext(advisedResponse);
-        String chatId = (String) advisedRequest.adviseContext().getOrDefault(CHAT_MEMORY_CONVERSATION_ID_KEY, RandomUtils.nextInt());
+        String chatId = (String) advisedRequest.adviseContext().get(CHAT_MEMORY_CONVERSATION_ID_KEY);
         var capturedMemory = chatClient.prompt()
                 .system(promptSystemSpec -> promptSystemSpec.param(
                         "memory", pgChatMemory.get(chatId, 10).stream()
