@@ -8,8 +8,11 @@ import com.sage.csa.service.UserChatService;
 import com.sage.csa.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,22 +25,29 @@ import java.util.List;
 @Slf4j
 public class PgChatMemory implements ChatMemory {
 
-    private final UserService userService;
-    private final UserChatService userChatService;
-    private final ChatHistoryRepository chatHistoryRepository;
-    private final UserChatRepository userChatRepository;
+    @Autowired private UserService userService;
+    @Autowired private UserChatService userChatService;
+    @Autowired private ChatHistoryRepository chatHistoryRepository;
+    @Autowired private UserChatRepository userChatRepository;
+
+    @Autowired
+    @Qualifier("ordinaryClient")
+    private ChatClient chatClient;
+
 
     @Override
     public void add(String conversationId, Message message) {
-        ChatMemory.super.add(conversationId, message);
+        add(conversationId, List.of(message));
     }
 
     @Override
     public void add(String conversationId, List<Message> messages) {
         var userName = userService.getLoggedInUser().getUserName();
         Boolean chatExists = userChatRepository.existsByUserNameAndChatId(userName, conversationId);
-        if(chatExists){
-            userChatService.save(new UserChat(userName, getTitle(messages), conversationId));
+        if(!chatExists){
+            String title = getTitle(messages);
+            log.info("Title: {}", title);
+            userChatService.save(new UserChat(userName, title, conversationId));
         }
         log.info("Adding messages to conversationId: {}", conversationId);
         var chatHistories = messages.stream()
@@ -61,7 +71,10 @@ public class PgChatMemory implements ChatMemory {
 
     public String getTitle(List<Message> messages){
         String content = messages.getFirst().getContent();
-        return content.length() <= 25 ? content : content.substring(0, 25);
+        return chatClient.prompt()
+                .user( "Condense the user's input into 5-6 meaningful words that clearly convey their intent. Do not add explanations, answers, or extra context—just a direct, concise transformation of the user input."+ " <input>" + content + "</input>")
+                .call()
+                .content();
     }
 
     private ChatHistory getChatHistory(String conversationId, Message message, String username) {

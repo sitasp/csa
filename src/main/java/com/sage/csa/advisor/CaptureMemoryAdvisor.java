@@ -5,11 +5,9 @@ import com.sage.csa.service.UserService;
 import com.sage.csa.service.impl.BasicMemoryExtractor;
 import com.sage.csa.service.impl.PgChatMemory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.api.AdvisedRequest;
-import org.springframework.ai.chat.client.advisor.api.AdvisedResponse;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisor;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.model.Content;
@@ -23,9 +21,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -34,7 +36,7 @@ import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvis
 
 @Component
 @Slf4j
-public class CaptureMemoryAdvisor implements CallAroundAdvisor {
+public class CaptureMemoryAdvisor implements CallAroundAdvisor, StreamAroundAdvisor {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final ExecutorService executorService;
@@ -65,10 +67,27 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor {
     @Override
     public AdvisedResponse aroundCall(AdvisedRequest advisedRequest,
                                       CallAroundAdvisorChain chain) {
+        log.info("Inside CaptureMemoryAdvisor aroundCall");
         var response = chain.nextAroundCall(advisedRequest);
         SecurityContext context = SecurityContextHolder.getContext();
         executorService.submit(backgroundTask(advisedRequest, response, context));
         return response;
+    }
+
+    @Override
+    public Flux<AdvisedResponse> aroundStream(AdvisedRequest advisedRequest, StreamAroundAdvisorChain chain) {
+        log.info("Inside CaptureMemoryAdvisor aroundStream");
+
+        SecurityContext context = SecurityContextHolder.getContext();
+
+        return chain.nextAroundStream(advisedRequest)
+                .collectList()  // Aggregate all responses into a List
+                .doOnSuccess(responses -> {
+                    if (!responses.isEmpty()) {
+                        executorService.submit(backgroundTask(advisedRequest, responses.get(responses.size() - 1), context));
+                    }
+                })
+                .flatMapMany(Flux::fromIterable); // Convert back to Flux
     }
 
     private Runnable backgroundTask(AdvisedRequest advisedRequest,
@@ -98,7 +117,7 @@ public class CaptureMemoryAdvisor implements CallAroundAdvisor {
         log.info("Initiating captureMemoryTask");
         var retrievedUserContent = basicMemoryExtractor.extractRequestContext(advisedRequest);
         var retrievedAssistantContent = basicMemoryExtractor.extractResponseContext(advisedResponse);
-        String chatId = (String) advisedRequest.adviseContext().getOrDefault(CHAT_MEMORY_CONVERSATION_ID_KEY, "");
+        String chatId = (String) advisedRequest.adviseContext().get(CHAT_MEMORY_CONVERSATION_ID_KEY);
         var capturedMemory = chatClient.prompt()
                 .system(promptSystemSpec -> promptSystemSpec.param(
                         "memory", pgChatMemory.get(chatId, 10).stream()
