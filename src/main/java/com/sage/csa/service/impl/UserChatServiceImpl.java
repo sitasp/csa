@@ -4,6 +4,7 @@ import com.sage.csa.dto.UserChatDTO;
 import com.sage.csa.entity.UserChat;
 import com.sage.csa.repository.UserChatRepository;
 import com.sage.csa.service.UserChatService;
+import com.sage.csa.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,10 @@ public class UserChatServiceImpl implements UserChatService {
 
     @Override
     public List<UserChatDTO> getUserChatByUserName(String userName) {
-        return userChatRepository.getUserChatsByUserName(userName)
-                .stream().map(e -> new UserChatDTO(e.getChatId(), e.getTitle()))
-                .toList();
 
+        return userChatRepository.getUserChatsByUserName(userName)
+                .stream().map(e -> new UserChatDTO(e.getChatId(), e.getTitle(), DateUtils.getTimeFromInstant(e.getCreatedAt())))
+                .toList();
     }
 
     @Override
