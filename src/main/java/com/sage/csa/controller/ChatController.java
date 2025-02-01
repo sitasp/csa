@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -25,16 +27,13 @@ import java.util.UUID;
 import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
 
 @RestController
-@RequiredArgsConstructor
 public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
 
-
-
-    private final ChatClient chatClient;
-    private final UserService userService;
-    private final UserChatService userChatService;
-    private final ChatHistoryService chatHistoryService;
+    @Autowired @Qualifier("specializedChatClient")
+    private ChatClient chatClient;
+    @Autowired private UserService userService;
+    @Autowired private ChatHistoryService chatHistoryService;
 
     @PostMapping("/chat")
     public Flux<String> chat(@RequestBody MessageRequest messageRequest) {

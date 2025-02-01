@@ -13,8 +13,8 @@ import java.util.List;
 @Configuration
 public class ChatConfig {
 
-    @Bean
-    public ChatClient chatClient(ChatClient.Builder builder,
+    @Bean(name = "specializedChatClient")
+    public ChatClient specializedChatClient(ChatClient.Builder builder,
                                  CaptureMemoryAdvisor captureMemoryAdvisor,
                                  SimpleLoggerAdvisor loggerAdvisor,
                                  PgChatMemory pgChatMemory){
@@ -22,6 +22,12 @@ public class ChatConfig {
                 .defaultAdvisors(new MessageChatMemoryAdvisor(pgChatMemory),
                         loggerAdvisor,
                         captureMemoryAdvisor)
+                .build();
+    }
+
+    @Bean(name = "ordinaryClient")
+    public ChatClient ordinaryClient(ChatClient.Builder builder){
+        return builder
                 .build();
     }
 }
