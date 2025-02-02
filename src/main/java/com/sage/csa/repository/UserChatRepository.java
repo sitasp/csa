@@ -12,6 +12,9 @@ public interface UserChatRepository extends JpaRepository<UserChat, Long> {
     @Query("SELECT uc FROM UserChat uc WHERE uc.userName = :userName order by uc.createdAt desc")
     List<UserChat> getUserChatsByUserName(String userName);
 
+    @Query("SELECT uc FROM UserChat uc WHERE uc.chatId = :chatId")
+    UserChat getUserChatByChatId(String chatId);
+
     @Query("SELECT count(uc) > 0 FROM UserChat uc WHERE uc.userName = :userName AND uc.chatId = :chatId")
     Boolean existsByUserNameAndChatId(String userName, String chatId);
 }

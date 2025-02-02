@@ -1,6 +1,6 @@
 package com.sage.csa.service.impl;
 
-import com.sage.csa.dto.UserChatDTO;
+import com.sage.csa.dto.response.ChatSessionResponse;
 import com.sage.csa.entity.UserChat;
 import com.sage.csa.repository.UserChatRepository;
 import com.sage.csa.service.UserChatService;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Service
 public class UserChatServiceImpl implements UserChatService {
@@ -16,11 +18,19 @@ public class UserChatServiceImpl implements UserChatService {
     @Autowired private UserChatRepository userChatRepository;
 
     @Override
-    public List<UserChatDTO> getUserChatByUserName(String userName) {
+    public List<ChatSessionResponse> getUserChatByUserName(String userName) {
 
         return userChatRepository.getUserChatsByUserName(userName)
-                .stream().map(e -> new UserChatDTO(e.getChatId(), e.getTitle(), DateUtils.getTimeFromInstant(e.getCreatedAt())))
+                .stream().map(e -> new ChatSessionResponse(e.getChatId(), e.getTitle(), DateUtils.getTimeFromInstant(e.getCreatedAt())))
                 .toList();
+    }
+
+    @Override
+    public ChatSessionResponse getUserChatById(String chatId) {
+        var userChat = userChatRepository.getUserChatByChatId(chatId);
+        if(Objects.isNull(userChat))
+            throw new NoSuchElementException(String.format("ChatId: %s doesn't exist", chatId));
+        return new ChatSessionResponse(userChat.getChatId(), userChat.getTitle(), DateUtils.getTimeFromInstant(userChat.getCreatedAt()));
     }
 
     @Override

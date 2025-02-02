@@ -1,26 +1,23 @@
 package com.sage.csa.controller;
 
 import com.sage.csa.dto.objects.ChatHistoryResponse;
-import com.sage.csa.dto.objects.KUser;
+import com.sage.csa.dto.objects.ChatMessageResponse;
 import com.sage.csa.dto.request.MessageRequest;
 import com.sage.csa.dto.response.ApiResponse;
-import com.sage.csa.entity.ChatHistory;
+import com.sage.csa.dto.response.ChatSessionResponse;
+import com.sage.csa.entity.UserChat;
 import com.sage.csa.service.ChatHistoryService;
 import com.sage.csa.service.UserChatService;
 import com.sage.csa.service.UserService;
 import com.sage.csa.utils.ControllerUtils;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.client.advisor.api.CallAroundAdvisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,6 +31,7 @@ public class ChatController {
     private ChatClient chatClient;
     @Autowired private UserService userService;
     @Autowired private ChatHistoryService chatHistoryService;
+    @Autowired private UserChatService userChatService;
 
     @PostMapping("/chat")
     public Flux<String> chat(@RequestBody MessageRequest messageRequest) {
@@ -63,9 +61,17 @@ public class ChatController {
     }
 
     @GetMapping("/chat-history")
-    public ApiResponse<List<ChatHistoryResponse>> fetchChatHistory(@RequestParam String chatId){
+    public ApiResponse<ChatHistoryResponse> fetchChatHistory(@RequestParam String chatId){
         var loggedInUser = userService.getLoggedInUser();
+        if(!userChatService.existsByUserNameAndChatId(loggedInUser.getUserName(), chatId)){
+            return ControllerUtils.five00(
+                    String.format("ChatId: %s is invalid for userId: %s", chatId, loggedInUser.getUserName()));
+        }
         var chatHistoryDtoList = chatHistoryService.findChatHistoryByChatIdAndUsername(chatId);
-        return ControllerUtils.ok(chatHistoryDtoList);
+        ChatHistoryResponse chatHistoryResponse = new ChatHistoryResponse();
+        chatHistoryResponse.setChatMessages(chatHistoryDtoList);
+        ChatSessionResponse chatSessionResponse = userChatService.getUserChatById(chatId);
+        chatHistoryResponse.setChatSession(chatSessionResponse);
+        return ControllerUtils.ok(chatHistoryResponse);
     }
 }

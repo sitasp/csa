@@ -1,5 +1,6 @@
 package com.sage.csa.service.impl;
 
+import com.sage.csa.dto.enums.ETitleType;
 import com.sage.csa.entity.ChatHistory;
 import com.sage.csa.entity.UserChat;
 import com.sage.csa.repository.ChatHistoryRepository;
@@ -47,7 +48,7 @@ public class PgChatMemory implements ChatMemory {
         if(!chatExists){
             String title = getTitle(messages);
             log.info("Title: {}", title);
-            userChatService.save(new UserChat(userName, title, conversationId));
+            userChatService.save(new UserChat(userName, title, conversationId, ETitleType.SYSTEM));
         }
         log.info("Adding messages to conversationId: {}", conversationId);
         var chatHistories = messages.stream()

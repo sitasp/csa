@@ -1,7 +1,7 @@
 package com.sage.csa.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sage.csa.dto.objects.ChatHistoryResponse;
+import com.sage.csa.dto.objects.ChatMessageResponse;
 import com.sage.csa.entity.ChatHistory;
 import com.sage.csa.repository.ChatHistoryRepository;
 import com.sage.csa.service.ChatHistoryService;
@@ -19,10 +19,10 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<ChatHistoryResponse> findChatHistoryByChatIdAndUsername(String chatId) {
+    public List<ChatMessageResponse> findChatHistoryByChatIdAndUsername(String chatId) {
         return chatHistoryRepository.findChatHistoryByChatId(chatId)
                 .stream()
-                .map(e -> objectMapper.convertValue(e, ChatHistoryResponse.class))
+                .map(e -> objectMapper.convertValue(e, ChatMessageResponse.class))
                 .toList();
     }
 

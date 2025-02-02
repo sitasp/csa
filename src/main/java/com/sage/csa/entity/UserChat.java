@@ -1,5 +1,6 @@
 package com.sage.csa.entity;
 
+import com.sage.csa.dto.enums.ETitleType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,11 +18,23 @@ public class UserChat {
     private String userName;
     private String title;
     private String chatId;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "title_type")
+    private ETitleType titleType;
+
     private Instant createdAt = Instant.now();
 
     public UserChat(String userName, String title, String chatId) {
         this.userName = userName;
         this.title = title;
         this.chatId = chatId;
+    }
+
+    public UserChat(String userName, String title, String chatId, ETitleType titleType) {
+        this.userName = userName;
+        this.title = title;
+        this.chatId = chatId;
+        this.titleType = titleType;
     }
 }
